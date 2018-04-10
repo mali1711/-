@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.15/dist/vue.js"></script>
+    <title>v-bind</title>
+    <style>
+        .class1{
+            background: #444;
+            color: #eee;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div v-if="seen">seen的值是真的时候， 才显示我想显示的文字</div>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data:{
+            seen: true,
+            array:'zhangSan wang ba '
+        }
+    });
+</script>
+</body>
+</html>

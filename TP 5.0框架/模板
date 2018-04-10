@@ -1,0 +1,400 @@
+---
+title: 模板
+tags: 模板定位,模板标签,变量输出
+grammar_cjkRuby: true
+---
+
+## 模板文件定义
+个模块的模板文件是独立的，为了对模板文件更加有效的管理，ThinkPHP对模板文件进行目录划分，默认的模板文件定义规则是：
+
+> 视图目录/控制器名（小写）/操作名（小写）+模板后缀
+
+### 模板渲染规则
+
+ 模板渲染使用`\think\View`类的`fetch`方法，渲染规则为：
+
+> 模块@控制器/操作
+
+
+模板文件目录默认位于模块的view目录下面，视图类的fetch方法中的模板文件的定位规则如下：
+
+如果调用没有任何参数的fetch方法：
+
+``` php
+return $view->fetch();
+```
+
+则按照系统的默认规则定位模板文件到：
+
+> [模板文件目录]/当前控制器名（小写+下划线）/当前操作名（小写）.html
+
+
+如果（指定操作）调用：
+
+``` php
+return $view->fetch('add');
+```
+
+则定位模板文件为：
+
+> [模板文件目录]/当前控制器名（小写+下划线）/add.html
+
+如果调用控制器的某个模板文件使用：
+
+``` php
+return $view->fetch('user/add');
+```
+
+则定位模板文件为：
+
+> [模板文件目录]/user/add.html
+
+跨模块调用模板
+
+``` elixir
+return $view->fetch('admin@user/add');
+```
+
+全路径模板调用：
+
+``` livescript
+return $view->fetch(APP_PATH.request()->module().'/view/public/header.html');
+```
+
+
+## 模板标签
+
+### 普通标签
+
+普通标签用于变量输出和模板注释，普通模板标签默认以`{` 和 `}` 作为开始和结束标识，并且在开始标记紧跟标签的定义，如果之间有空格或者换行则被视为非模板标签直接输出。 例如：`{$name}` 、`{$vo.name}` 、`{$vo['name']|strtoupper}` 都属于正确的标签，而`{ $name}` 、`{ $vo.name}`则不属于。
+
+要更改普通标签的起始标签和结束标签，可以更改下面的配置参数：
+
+``` php
+'template'  => [
+    // 模板引擎
+    'type'   => 'think',
+    // 普通标签开始标记 
+    'tpl_begin' =>    '<{',
+    // 普通标签结束标记
+    'tpl_end'   =>    '}>'        
+],
+```
+
+普通标签的定界符就被修改了，原来的 `{$name}` 和 `{$vo.name}` 必须使用 `<{$name}>` 和 `<{$vo.name}>` 才能生效了。
+
+### 标签库标签
+
+标签库标签可以用于模板变量输出、文件包含、条件控制、循环输出等功能，而且完全可以自己扩展功能。
+
+5.0版本的标签库默认定界符和普通标签一样使用`{`和`}`，是为了便于在编辑器里面编辑不至于报错，当然，你仍然可以更改标签库标签的起始和结束标签，修改下面的配置参数：
+
+``` php
+'template'      => [
+    // 模板引擎
+    'type'   => 'think',
+    //标签库标签开始标签 
+    'taglib_begin'  =>  '<',
+    //标签库标签结束标记
+    'taglib_end'    =>  '>',     
+],
+```
+
+原来的
+
+``` php
+{eq name="name" value="value"}
+相等
+{else/}
+不相等
+{/eq}
+```
+
+就需要改成
+
+``` php
+<eq name="name" value="value">
+相等
+<else/>
+不相等
+</eq>
+
+```
+
+## 变量输出
+
+在模板中输出变量的方法很简单，例如，在控制器中我们给模板变量赋值：
+
+``` php
+$view = new View();
+$view->name = 'thinkphp';
+return $view->fetch();
+```
+
+然后就可以在模板中使用：
+
+``` scss
+Hello,{$name}！
+```
+
+模板编译后的结果就是：
+
+``` stylus
+Hello,<?php echo($name);?>！
+```
+
+这样，运行的时候就会在模板中显示： Hello,ThinkPHP！
+
+注意模板标签的`{`和`$`之间不能有任何的空格，否则标签无效。所以，下面的标签
+
+``` scss
+Hello,{ $name}！
+```
+
+将不会正常输出name变量，而是直接保持不变输出： Hello,{ $name}！
+
+模板标签的变量输出根据变量类型有所区别，刚才我们输出的是字符串变量，如果是数组变量，
+
+``` elixir
+$data['name'] = 'ThinkPHP';
+$data['email'] = 'thinkphp@qq.com';
+$view->assign('data',$data);
+```
+
+那么，在模板中我们可以用下面的方式输出：
+
+``` haskell
+Name：{$data.name}
+Email：{$data.email}
+```
+
+或者用下面的方式也是有效：
+
+``` scss
+Name：{$data['name']}
+Email：{$data['email']}
+```
+
+> 当我们要输出多维数组的时候，往往要采用后面一种方式。
+
+如果data变量是一个对象（并且包含有name和email两个属性），那么可以用下面的方式输出：
+
+``` stylus
+Name：{$data:name}
+Email：{$data:email}
+```
+
+或者
+
+``` haskell
+Name：{$data->name}
+Email：{$data->email}
+```
+
+## 系统变量
+
+## 使用函数
+
+## 请求参数
+
+## 使用函数
+
+## 使用默认值
+
+## 使用运算符
+
+## 三元运算符
+
+## 原样输出
+
+## 模板注释
+
+## 模板布局
+
+## 模板继承
+
+## 包含文件
+
+## 标签库
+
+## 内置标签
+### 循环输出标签
+
+#### VOLIST标签
+volist标签通常用于查询数据集（select方法）的结果输出，通常模型的select方法返回的结果是一个二维数组，可以直接使用volist标签进行输出。 在控制器中首先对模版赋值：
+
+``` elixir
+$list = User::all();
+$this->assign('list',$list);
+```
+
+在模版定义如下，循环输出用户的编号和姓名：
+
+``` php
+{volist name="list" id="vo"}
+{$vo.id}:{$vo.name}
+{/volist}
+```
+
+Volist标签的name属性表示模板赋值的变量名称，因此不可随意在模板文件中改变。id表示当前的循环变量，可以随意指定，但确保不要和name属性冲突，例如：
+
+``` php
+{volist name="list" id="data"}
+{$data.id}:{$data.name}
+{/volist}
+```
+
+支持输出查询结果中的部分数据，例如输出其中的第5～15条记录
+
+``` applescript
+{volist name="list" id="vo" offset="5" length='10'}
+{$vo.name}
+{/volist}
+```
+
+输出偶数记录
+
+``` clojure
+{volist name="list" id="vo" mod="2" }
+{eq name="mod" value="1"}{$vo.name}{/eq}
+{/volist}
+```
+
+Mod属性还用于控制一定记录的换行，例如：
+
+``` clojure
+{volist name="list" id="vo" mod="5" }
+{$vo.name}
+{eq name="mod" value="4"}{/eq}
+{/volist}
+```
+为空的时候输出提示：
+
+``` applescript
+{volist name="list" id="vo" empty="暂时没有数据" }
+{$vo.id}|{$vo.name}
+{/volist}
+```
+
+mpty属性不支持直接传入html语法，但可以支持变量输出，例如：
+
+``` elixir
+$this->assign('empty','没有数据');
+$this->assign('list',$list);
+```
+
+然后在模板中使用：
+
+``` applescript
+{volist name="list" id="vo" empty="$empty" }
+{$vo.id}|{$vo.name}
+{/volist}
+```
+
+
+输出循环变量：
+
+``` nix
+{volist name="list" id="vo" key="k" }
+{$k}.{$vo.name}
+{/volist}
+```
+
+如果没有指定key属性的话，默认使用循环变量i，例如：
+
+``` applescript
+{volist name="list" id="vo"  }
+{$i}.{$vo.name}
+{/volist}
+```
+
+如果要输出数组的索引，可以直接使用key变量，和循环变量不同的是，这个key是由数据本身决定，而不是循环控制的，例如：
+
+``` applescript
+{volist name="list" id="vo"  }
+{$key}.{$vo.name}
+{/volist}
+```
+
+模板中可以直接使用函数设定数据集，而不需要在控制器中给模板变量赋值传入数据集变量，如：
+
+``` clojure
+{volist name=":fun('arg')" id="vo"}
+{$vo.name}
+{/volist}
+```
+
+
+#### FOREACH标签
+
+foreach标签类似与volist标签，只是更加简单，没有太多额外的属性，最简单的用法是：
+
+``` stata
+{foreach $list as $vo} 
+    {$vo.id}:{$vo.name}
+{/foreach}
+```
+
+
+该用法解析后是最简洁的。
+
+也可以使用下面的用法：
+
+``` powershell
+{foreach name="list" item="vo"}
+    {$vo.id}:{$vo.name}
+{/foreach}
+```
+
+
+name表示数据源 item表示循环变量。
+
+可以输出索引，如下：
+
+``` powershell
+{foreach name="list" item="vo" }
+    {$key}|{$vo}
+{/foreach}
+```
+
+
+也可以定义索引的变量名
+
+``` powershell
+{foreach name="list" item="vo" key="k" }
+   {$k}|{$vo}
+{/foreach}
+```
+
+
+#### FOR标签
+
+用法：
+
+``` nix
+{for start="开始值" end="结束值" comparison="" step="步进值" name="循环变量名" }
+{/for}
+```
+
+
+开始值、结束值、步进值和循环变量都可以支持变量，开始值和结束值是必须，其他是可选。comparison 的默认值是lt，name的默认值是i，步进值的默认值是1，举例如下：
+
+``` powershell
+{for start="1" end="100"}
+{$i}
+{/for}
+```
+
+
+解析后的代码是
+
+``` php
+for ($i=1;$i<100;$i+=1){
+    echo $i;
+} 
+```
+
+
+
+
+

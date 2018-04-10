@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.15/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <p v-html="value"></p>
+        <input type="text" v-model="value"/>
+    </div>
+    <script>
+        new Vue({
+            el:'#app',
+            data:{
+                value:'默认值'
+            }
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+---
+title: Session
+tags: 新建,模板,小书匠
+grammar_cjkRuby: true
+---
+
+
+
+## 概述
+ThinkPHP采用`think\Session`类提供Session功能支持。	
+
+<table border=2><thead><tr><th>版本</th><th>新增功能</th></tr></thead><tbody><tr><td>5.0.5</td><td>增加安全选项参数<code>secure</code>和<code>httponly</code></td></tr><tr><td>5.0.2</td><td>增加<code>flash</code>方法和<code>flush</code>方法</td></tr></tbody></table>
+
+## Session初始化
+在ThinkPHP5.0中使用\think\Session类进行Session相关操作，Session会在第一次调用Session类的时候按照配置的参数自动初始化，例如，我们在应用配置中添加如下配置：
+
+``` php
+'session'                => [
+    'prefix'         => 'think',
+    'type'           => '',
+    'auto_start'     => true,
+],
+```
+
+如果我们使用上述的session配置参数的话，无需任何操作就可以直接调用Session类的相关方法，例如：
+
+``` php
+Session::set('name','thinkphp');
+Session::get('name');
+```
+
+如果你应用下面的不同模块需要不同的session参数，那么可以在模块配置文件中重新设置：
+
+'session'                => [
+    'prefix'         => 'module',
+    'type'           => '',
+    'auto_start'     => true,
+],
+
+或者调用init方法进行初始化：
+
+Session::init([
+    'prefix'         => 'module',
+    'type'           => '',
+    'auto_start'     => true,
+]);
+
+## 设置参数
+默认支持的session设置参数包括：
+
+<table border='2'><thead><tr><th>参数</th><th>描述</th></tr></thead><tbody><tr><td>type</td><td>session类型</td></tr><tr><td>expire</td><td>session过期时间</td></tr><tr><td>prefix</td><td>session前缀</td></tr><tr><td>auto_start</td><td>是否自动开启</td></tr><tr><td>use_trans_sid</td><td>是否使用use_trans_sid</td></tr><tr><td>var_session_id</td><td>请求session_id变量名</td></tr><tr><td>id</td><td>session_id</td></tr><tr><td>name</td><td>session_name</td></tr><tr><td>path</td><td>session保存路径</td></tr><tr><td>domain</td><td>session cookie_domain</td></tr><tr><td>use_cookies</td><td>是否使用cookie</td></tr><tr><td>cache_limiter</td><td>session_cache_limiter</td></tr><tr><td>cache_expire</td><td>session_cache_expire</td></tr></tbody></table>
+
+> 如果做了session驱动扩展，可能有些参数不一定有效。
+
+## 基础用法
+
+### 赋值
+``` scss
+// 赋值（当前作用域）
+Session::set('name','thinkphp');
+// 赋值think作用域
+Session::set('name','thinkphp','think');
+```
+
+### 判断是否存在
+
+``` scss
+// 判断（当前作用域）是否赋值
+Session::has('name');
+// 判断think作用域下面是否赋值
+Session::has('name','think');
+```
+
+### 取值
+
+``` php
+// 取值（当前作用域）
+Session::get('name');
+// 取值think作用域
+Session::get('name','think');
+```
+
+如果name的值不存在，返回null。
+
+### 删除
+
+``` scss
+// 删除（当前作用域）
+Session::delete('name');
+// 删除think作用域下面的值
+Session::delete('name','think');
+```
+
+
+### 指定作用域
+
+``` stylus
+// 指定当前作用域
+Session::prefix('think');
+```
+
+### 取值并删除
+
+``` stylus
+// 取值并删除
+Session::pull('name');
+```
+
+如果name的值不存在，返回Null。
+
+### 清空
+
+``` scss
+// 清除session（当前作用域）
+Session::clear();
+// 清除think作用域
+Session::clear('think');
+```
+
+闪存数据，下次请求之前有效（v5.0.2+）
+
+// 设置session 并且在下一次请求之前有效
+
+``` css
+Session::flash('name','value');
+```
+
+
+提前清除当前请求有效的数据（v5.0.2+）
+
+``` scss
+// 清除当前请求有效的session
+Session::flush();
+```
+
+
+## 二级数组
+
+支持session的二维数组操作，例如：
+
+``` scss
+// 赋值（当前作用域）
+Session::set('name.item','thinkphp');
+// 判断（当前作用域）是否赋值
+Session::has('name.item');
+// 取值（当前作用域）
+Session::get('name.item');
+// 删除（当前作用域）
+Session::delete('name.item');
+```
+
+### 助手函数
+
+``` php
+// 初始化session
+session([
+    'prefix'     => 'module',
+    'type'       => '',
+    'auto_start' => true,
+]);
+
+// 赋值（当前作用域）
+session('name', 'thinkphp');
+
+// 赋值think作用域
+session('name', 'thinkphp', 'think');
+
+// 判断（当前作用域）是否赋值
+session('?name');
+
+// 取值（当前作用域）
+session('name');
+
+// 取值think作用域
+session('name', '', 'think');
+
+// 删除（当前作用域）
+session('name', null);
+
+// 清除session（当前作用域）
+session(null);
+
+// 清除think作用域
+session(null, 'think');
+```
+
+### Session驱动
+支持指定 Session 驱动，配置文件如下：
+``` stylus
+'session' => [
+    'prefix'     => 'module',
+    'type'       => 'redis',
+    'auto_start' => true,
+     // redis主机
+    'host'       => '127.0.0.1',
+     // redis端口
+    'port'       => 6379,
+     // 密码
+    'password'   => '',
+]
+```
+表示使用`redis`作为`session`类型。
+
+
+

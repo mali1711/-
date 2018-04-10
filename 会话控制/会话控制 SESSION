@@ -1,0 +1,12 @@
+---
+title: 会话控制 SESSION
+tags: 新建,模板,小书匠
+grammar_cjkRuby: true
+---
+## 什么是SESSION
+服务器和浏览器之间共同小秘密的时间。
+## 工作原理
+![enter description here][1]
+
+
+  [1]: ./images/1522651541188.jpg "1522651541188.jpg"

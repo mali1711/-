@@ -1,0 +1,519 @@
+---
+title: 模型
+tags: 定义,初始化,新增,删除,查找,修改，
+grammar_cjkRuby: true
+---
+
+## 模型初始化
+### 模型初始化
+模型同样支持初始化，与控制器的初始化不同的是，模型的初始化是重写`Model`的`initialize`，具体如下
+
+``` php
+namespace app\index\model;
+
+use think\Model;
+
+class Index extends Model
+{
+
+    //自定义初始化
+    protected function initialize()
+    {
+        //需要调用`Model`的`initialize`方法
+        parent::initialize();
+        //TODO:自定义的初始化
+    }
+}
+```
+同样也可以使用静态`init`方法，需要注意的是`init`只在第一次实例化的时候执行，并且方法内需要注意静态调用的规范，具体如下：
+
+``` stylus
+namespace app\index\model;
+
+use think\Model;
+
+class Index extends Model
+{
+
+    //自定义初始化
+    protected static function init()
+    {
+        //TODO:自定义的初始化
+    }
+}
+```
+
+## 新增
+
+### 添加一条数据
+第一种是实例化模型对象后赋值并保存：
+
+``` php
+$user           = new User;
+$user->name     = 'thinkphp';
+$user->email    = 'thinkphp@qq.com';
+$user->save();
+```
+
+也可以使用data方法批量赋值：
+
+``` php
+$user = new User;
+$user->data([
+    'name'  =>  'thinkphp',
+    'email' =>  'thinkphp@qq.com'
+]);
+$user->save();
+```
+
+或者直接在实例化的时候传入数据
+
+``` php
+$user = new User([
+    'name'  =>  'thinkphp',
+    'email' =>  'thinkphp@qq.com'
+]);
+$user->save();
+```
+
+如果需要过滤非数据表字段的数据，可以使用`allowField`：
+
+``` php
+$user = new User($_POST);
+// 过滤post数组中的非数据表字段数据
+$user->allowField(true)->save();
+```
+
+如果你通过外部提交赋值给模型，并且希望指定某些字段写入，可以使用：
+
+``` php
+$user = new User($_POST);
+// post数组中只有name和email字段会写入
+$user->allowField(['name','email'])->save();
+```
+
+
+### 获取自增ID
+如果要获取新增数据的自增ID，可以使用下面的方式：
+
+``` php
+$user           = new User;
+$user->name     = 'thinkphp';
+$user->email    = 'thinkphp@qq.com';
+$user->save();
+// 获取自增ID
+echo $user->id;
+```
+注意这里其实是获取模型的主键，如果你的主键不是`id`，而是`user_id`的话，其实获取自增`ID`就变成这样：
+
+``` php
+$user           = new User;
+$user->name     = 'thinkphp';
+$user->email    = 'thinkphp@qq.com';
+$user->save();
+// 获取自增ID
+echo $user->user_id;
+```
+注意不要在同一个实例里面多次新增数据，如果确实需要多次新增，那么可以用下面的方式：
+
+``` php
+$user           = new User;
+$user->name     = 'thinkphp';
+$user->email    = 'thinkphp@qq.com';
+$user->save();
+$user->name     = 'onethink';
+$user->email    = 'onethink@qq.com';
+// 第二次开始必须使用下面的方式新增
+$user->isUpdate(false)->save();
+```
+
+
+### 添加多条数据
+添加多条数据
+
+``` php
+$user = new User;
+$list = [
+    ['name'=>'thinkphp','email'=>'thinkphp@qq.com'],
+    ['name'=>'onethink','email'=>'onethink@qq.com']
+];
+$user->saveAll($list);
+```
+
+saveAll方法新增数据默认会自动识别数据是需要新增还是更新操作，当数据中存在主键的时候会认为是更新操作，如果你需要带主键数据批量新增，可以使用下面的方式：
+
+``` php
+$user = new User;
+$list = [
+    ['id'=>1, 'name'=>'thinkphp', 'email'=>'thinkphp@qq.com'],
+    ['id'=>2, 'name'=>'onethink', 'email'=>'onethink@qq.com'],
+];
+$user->saveAll($list, false);
+```
+
+
+### 静态方法
+还可以直接静态调用create方法创建并写入：
+
+``` php
+$user = User::create([
+    'name'  =>  'thinkphp',
+    'email' =>  'thinkphp@qq.com'
+]);
+echo $user->name;
+echo $user->email;
+echo $user->id; // 获取自增ID
+```
+
+> 和save方法不同的是，create方法返回的是当前模型的对象实例。
+
+
+### 助手函数
+系统提供了model助手函数用于快速实例化模型，并且使用单例实现，例如：
+
+``` php
+// 使用model助手函数实例化User模型
+$user = model('User');
+// 模型对象赋值
+$user->data([
+    'name'  =>  'thinkphp',
+    'email' =>  'thinkphp@qq.com'
+]);
+$user->save();
+```
+
+或者进行批量新增：
+
+``` php
+$user = model('User');
+// 批量新增
+$list = [
+    ['name'=>'thinkphp','email'=>'thinkphp@qq.com'],
+    ['name'=>'onethink','email'=>'onethink@qq.com']
+];
+$user->saveAll($list);
+```
+
+## 更新
+### 查找并更新
+
+``` php
+$user = User::get(1);
+$user->name     = 'thinkphp';
+$user->email    = 'thinkphp@qq.com';
+$user->save();
+```
+
+### 直接更新数据
+
+``` php
+$user = new User;
+// save方法第二个参数为更新条件
+$user->save([
+    'name'  => 'thinkphp',
+    'email' => 'thinkphp@qq.com'
+],['id' => 1]);
+```
+
+上面两种方式更新数据，如果需要过滤非数据表字段的数据，可以使用：
+
+``` php
+$user = new User();
+// 过滤post数组中的非数据表字段数据
+$user->allowField(true)->save($_POST,['id' => 1]);
+```
+
+如果你通过外部提交赋值给模型，并且希望指定某些字段写入，可以使用：
+
+``` php
+$user = new User();
+// post数组中只有name和email字段会写入
+$user->allowField(['name','email'])->save($_POST, ['id' => 1]);
+```
+
+### 批量更新数据
+
+``` php
+$user = new User;
+$list = [
+    ['id'=>1, 'name'=>'thinkphp', 'email'=>'thinkphp@qq.com'],
+    ['id'=>2, 'name'=>'onethink', 'email'=>'onethink@qq.com']
+];
+$user->saveAll($list);
+```
+
+V5.0.13+版本开始，你可以使用下面的方式强制进行数据更新操作而不是新增操作（尤其适合于复合主键的情况）。
+
+``` ocaml
+$user = new User;
+$list = [
+    ['id'=>1, 'name'=>'thinkphp', 'email'=>'thinkphp@qq.com'],
+    ['id'=>2, 'name'=>'onethink', 'email'=>'onethink@qq.com']
+];
+$user->isUpdate()->saveAll($list);
+```
+
+### 通过数据库类更新数据
+
+``` php
+$user = new User;
+$user->where('id', 1)
+    ->update(['name' => 'thinkphp']);
+```
+
+或者使用：
+
+``` php
+$user = new User;
+$user->update(['id' => 1, 'name' => 'thinkphp']);
+```
+
+> 如果传入update的数据包含主键的话，可以无需使用where方法。
+### 闭包更新
+
+可以通过闭包函数使用更复杂的更新条件，例如：
+
+``` php
+$user = new User;
+$user->save(['name' => 'thinkphp'],function($query){
+    // 更新status值为1 并且id大于10的数据
+    $query->where('status', 1)->where('id', '>', 10);
+});
+```
+
+### 自动识别
+
+我们已经看到，模型的新增和更新方法都是`save`方法，系统有一套默认的规则来识别当前的数据需要更新还是新增。
+
+ - 实例化模型后调用save方法表示新增；
+ - 查询数据后调用save方法表示更新；
+ - save方法传入更新条件后表示更新；
+ 
+如果你的数据操作比较复杂，可以显式的指定当前调用`save`方法是新增操作还是更新操作。
+
+显式更新数据：
+
+``` php
+// 实例化模型
+$user = new User;
+// 显式指定更新数据操作
+$user->isUpdate(true)
+    ->save(['id' => 1, 'name' => 'thinkphp']);
+```
+
+
+显式新增数据：
+
+``` elixir
+$user = User::get(1);
+$user->name = 'thinkphp';
+// 显式指定当前操作为新增操作
+$user->isUpdate(false)->save();
+```
+
+注意不要在一个模型实例里面做多次更新，会导致部分重复数据不再更新，正确的方式应该是先查询后更新或者使用模型类的`update`方法更新。
+
+
+> 如果你调用save方法进行多次数据写入的时候，需要注意，第二次save方法的时候必须使用isUpdate(false)，否则会视为更新数据。
+
+## 删除
+
+### 删除当前模型
+
+删除模型数据，可以在实例化后调用delete方法。
+
+``` elixir
+$user = User::get(1);
+$user->delete();
+```
+
+
+### 根据主键删除
+
+或者直接调用静态方法
+
+``` scss
+User::destroy(1);
+// 支持批量删除多个数据
+User::destroy('1,2,3');
+// 或者
+User::destroy([1,2,3]);
+```
+
+
+> V5.0.9+版本开始当destroy方法传入空值（包括空字符串和空数组）的时候不会做任何的数据删除操作，但传入0则是有效的
+
+### 条件删除
+
+
+
+使用数组进行条件删除，例如：
+
+``` scss
+// 删除状态为0的数据
+User::destroy(['status' => 0]);
+```
+
+
+还支持使用闭包删除，例如：
+
+``` php
+User::destroy(function($query){
+    $query->where('id','>',10);
+});
+```
+
+
+或者通过数据库类的查询条件删除
+
+``` php
+User::where('id','>',10)->delete();
+```
+
+## 查询
+### 获取单个数据
+获取单个数据的方法包括：
+
+``` php
+取出主键为1的数据
+$user = User::get(1);
+echo $user->name;
+
+// 使用数组查询
+$user = User::get(['name' => 'thinkphp']);
+
+// 使用闭包查询
+$user = User::get(function($query){
+    $query->where('name', 'thinkphp');
+});
+echo $user->name;
+```
+
+> 如果你是在模型内部，请不要使用`$this->name`的方式来获取数据，请使用`$this->getAttr('name')` 替代。
+
+或者在实例化模型后调用查询方法
+
+``` php
+$user = new User();
+// 查询单个数据
+$user->where('name', 'thinkphp')
+    ->find();
+```
+
+`get`或者`find`方法返回的是当前模型的对象实例，可以使用模型的方法。
+
+### 获取多个数据
+
+取出多个数据：
+
+``` php
+// 根据主键获取多个数据
+$list = User::all('1,2,3');
+// 或者使用数组
+$list = User::all([1,2,3]);
+foreach($list as $key=>$user){
+    echo $user->name;
+}
+// 使用数组查询
+$list = User::all(['status'=>1]);
+// 使用闭包查询
+$list = User::all(function($query){
+    $query->where('status', 1)->limit(3)->order('id', 'asc');
+});
+foreach($list as $key=>$user){
+    echo $user->name;
+}
+```
+
+> 数组方式和闭包方式的数据查询的区别在于，数组方式只能定义查询条件，闭包方式可以支持更多的连贯操作，包括排序、数量限制等。
+
+或者在实例化模型后调用查询方法
+
+``` php
+$user = new User();
+// 查询数据集
+$user->where('name', 'thinkphp')
+    ->limit(10)
+    ->order('id', 'desc')
+    ->select();
+```
+
+> 模型的all方法或者select方法返回的是一个包含模型对象的二维数组或者数据集对象。
+
+### 自定义数据集对象
+
+V5.0.4+版本开始，支持在模型中单独设置查询数据集的返回对象的名称（默认是数组），例如：
+
+``` php
+<?php
+namespace app\index\model;
+
+use think\Model;
+
+class User extends Model
+{
+	// 设置返回数据集的对象名
+	protected $resultSetType = 'collection';
+}
+```
+
+`resultSetType`字段如果为空则使用数组作为数据集返回类型，如果设置为collection则表示使用`think\Collection`作为返回对象名，也可以设置自定义的数据集对象名称（使用完整的命名空间定义）。
+
+
+获取某个字段或者某个列的值
+
+``` php
+// 获取某个用户的积分
+User::where('id',10)->value('score');
+// 获取某个列的所有值
+User::where('status',1)->column('name');
+// 以id为索引
+User::where('status',1)->column('name','id');
+User::where('status',1)->column('id,name'); // 同tp3的getField
+```
+
+> 注意`value`和`column`方法返回的不再是一个模型对象实例，而是单纯的值或者某个列的数组。
+
+### 动态查询
+
+``` php
+// 根据name字段查询用户
+$user = User::getByName('thinkphp');
+
+// 根据email字段查询用户
+$user = User::getByEmail('thinkphp@qq.com');
+```
+
+### 通过Query类查询
+
+或者使用数据库的查询方法进行更复杂的查询
+
+``` css
+User::where('id','>',10)->select();
+User::where('name','thinkphp')->find();
+```
+
+> 可以在模型中直接使用所有数据库的链式操作方法。
+
+### 数据分批处理
+模型也可以支持对返回的数据分批处理，这在处理大量数据的时候非常有用，例如：
+
+``` php
+User::chunk(100,function($users){
+    foreach($users as $user){
+        // 处理user模型对象
+    }
+});
+```
+
+> 更多的分批处理用法，可以参考数据库的查询数据部分。
+
+### 查询缓存
+
+`get`方法和`all`方法的第三个参数表示是否使用查询缓存，或者设置缓存标识。
+
+$user = User::get(1,'',true);
+$list  = User::all('1,2,3','',true);
+
+> 由于第二个参数是关联预载入定义，V5.0.6+版本开始，可以直接在第二个参数传入true表示开启查询缓存。
+

@@ -1,0 +1,32 @@
+---
+title: 马黎 ecshop 总结
+tags: 安装,目录简介,模板替换,ECShop_V3.0.0_UTF8版本,
+grammar_cjkRuby: true
+---
+
+## 一 、安装
+安装完成后
+
+## 二、目录简介
+
+ - themes ---> 存放模板的文件夹
+
+## 二、网站的基本设置
+![enter description here][1]
+
+![enter description here][2]
+
+## 模板的基本操作
+
+ecshop中的模板，采用下面方式来引入公共文件
+	
+``` html
+        //引入library文件中的page_header.lbi代码
+	<!-- #BeginLibraryItem "/library/page_header.lbi" --><!-- #EndLibraryItem -->
+```
+
+
+
+
+  [1]: ./images/1521882267037.jpg "1521882267037.jpg"
+  [2]: ./images/2018-03-24_170716.png "网站的基本修改"

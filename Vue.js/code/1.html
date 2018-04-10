@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--推荐再网上引入-->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.15/dist/vue.js"></script>
+    <title>Title</title>
+</head>
+<body>
+<div id="mes">
+    <p v-html="message"></p>
+    <p v-html="name"></p>
+    <p>{{name}}</p>
+</div>
+<script>
+    new Vue({
+        el:'#mes',
+        data:{
+            message:'显示文字xxx',
+            name:'zhangsan',
+        }
+    })
+</script>
+</body>
+</html>
